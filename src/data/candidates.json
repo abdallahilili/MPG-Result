@@ -1,0 +1,20 @@
+[
+  { "id": "1",  "nom": "Ahmed Ould Mohamed",      "telephone": "22212345678", "nni": "1234567890", "rang": 1,  "filiere": "Informatique",            "statut": " selectionne" },
+  { "id": "2",  "nom": "Fatimata Mint Salem",      "telephone": "22298765432", "nni": "0987654321", "rang": 2,  "filiere": "Informatique",            "statut": "selectionne" },
+  { "id": "3",  "nom": "Mohamed Lemine Ould Ahmed","telephone": "22211223344", "nni": "1122334455", "rang": 3,  "filiere": "Informatique",            "statut": "selectionne" },
+  { "id": "4",  "nom": "Mariem Mint Cheikh",       "telephone": "22244556677", "nni": "4455667788", "rang": 4,  "filiere": "Informatique",            "statut": "selectionne" },
+  { "id": "5",  "nom": "Sidi Mohamed Ould Bah",    "telephone": "22277889900", "nni": "7788990011", "rang": 5,  "filiere": "Informatique",            "statut": "selectionne" },
+  { "id": "6",  "nom": "Khadijatou Mint Bouh",     "telephone": "22233445566", "nni": "3344556677", "rang": 6,  "filiere": "Informatique",            "statut": "attente" },
+  { "id": "7",  "nom": "Abdellahi Ould Cheikh",    "telephone": "22255667788", "nni": "5566778899", "rang": 7,  "filiere": "Informatique",            "statut": "attente" },
+  { "id": "8",  "nom": "Aminetou Mint Diallo",     "telephone": "22288990011", "nni": "8899001122", "rang": 8,  "filiere": "Informatique",            "statut": "attente" },
+  { "id": "9",  "nom": "Oumar Ould Vall",          "telephone": "22210203040", "nni": "1020304050", "rang": 1,  "filiere": "Électricité Industrielle","statut": "selectionne" },
+  { "id": "10", "nom": "Hawa Diallo",               "telephone": "22230405060", "nni": "3040506070", "rang": 2,  "filiere": "Électricité Industrielle","statut": "selectionne" },
+  { "id": "11", "nom": "Isselmou Ould Niang",      "telephone": "22250607080", "nni": "5060708090", "rang": 3,  "filiere": "Électricité Industrielle","statut": "attente" },
+  { "id": "12", "nom": "Zeinabou Mint Ahmed",      "telephone": "22270809010", "nni": "7080901020", "rang": 4,  "filiere": "Électricité Industrielle","statut": "non selectionne" },
+  { "id": "13", "nom": "Mokhtar Ould Sidi",        "telephone": "22215253545", "nni": "1525354555", "rang": 1,  "filiere": "Génie Civil",             "statut": "selectionne" },
+  { "id": "14", "nom": "Naha Mint Braham",         "telephone": "22235455657", "nni": "3545565758", "rang": 2,  "filiere": "Génie Civil",             "statut": "selectionne" },
+  { "id": "15", "nom": "Yahya Ould Moustapha",     "telephone": "22255657585", "nni": "5565758595", "rang": 3,  "filiere": "Génie Civil",             "statut": "attente" },
+  { "id": "16", "nom": "Awa Ba",                   "telephone": "22291827364", "nni": "9182736455", "rang": 1,  "filiere": "Comptabilité",            "statut": "selectionne" },
+  { "id": "17", "nom": "Cheikh Ould Taleb",        "telephone": "22219283746", "nni": "1928374655", "rang": 2,  "filiere": "Comptabilité",            "statut": "selectionne" },
+  { "id": "18", "nom": "Roukia Mint Youssouf",     "telephone": "22229384756", "nni": "2938475665", "rang": 3,  "filiere": "Comptabilité",            "statut": "attente" }
+]
