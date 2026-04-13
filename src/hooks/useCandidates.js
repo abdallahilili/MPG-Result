@@ -23,6 +23,7 @@ export function useCandidates() {
 
         // On mappe les champs de la vue vers les noms attendus par l'application
         const mappedData = data.map((c) => {
+          
           let mappedStatut = "rejete"; // Par défaut, tout ce qui n'est pas sélectionné ou en attente est rejeté
           const etat = (c.etat || "").toLowerCase().trim();
           
