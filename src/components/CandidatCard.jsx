@@ -5,9 +5,13 @@ import { ChevronRight, Medal } from "lucide-react";
 /**
  * CandidatCard – ligne cliquable représentant un candidat dans la liste
  */
-export default function CandidatCard({ candidat, index, showRang = true }) {
+export default function CandidatCard({ candidat, index, showRang = true, useSpecialtyRank = false }) {
   const navigate = useNavigate();
   const isSelectionne = candidat.statut === "selectionne";
+  const isAttente = candidat.statut === "attente";
+  const isRejete = candidat.statut === "rejete";
+
+  const displayRank = useSpecialtyRank ? (candidat.rang_in_specialty || candidat.rang) : candidat.rang;
 
   return (
     <motion.div
@@ -28,7 +32,7 @@ export default function CandidatCard({ candidat, index, showRang = true }) {
       {showRang && (
         <span className="flex items-center gap-0.5 text-xs font-bold text-muted min-w-[32px]">
           <Medal size={13} strokeWidth={2.5} className="text-muted/30" />
-          {candidat.rang}
+          {displayRank}
         </span>
       )}
 
@@ -47,10 +51,12 @@ export default function CandidatCard({ candidat, index, showRang = true }) {
         whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest
         ${isSelectionne 
           ? 'bg-green-soft text-green' 
-          : 'bg-orange-soft text-orange'
+          : isAttente 
+          ? 'bg-orange-soft text-orange'
+          : 'bg-red-soft text-red'
         }
       `}>
-        {isSelectionne ? "Sélectionné" : "Attente"}
+        {isSelectionne ? "Sélectionné" : isAttente ? "Attente" : "Rejeté"}
       </span>
 
       <div className="text-muted/30">

@@ -17,7 +17,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filiere, setFiliere] = useState("Toutes les filières");
 
-  const { filieres, filterCandidates } = useCandidates();
+  const { filieres, filterCandidates, loading, error, candidates } = useCandidates();
 
   // Candidats filtrés selon recherche (validée) + filière
   const filtered = useMemo(
@@ -25,24 +25,70 @@ export default function HomePage() {
     [filiere, searchTerm, filterCandidates]
   );
 
-  // Séparation sélectionnés / liste d'attente, triés par rang
-  const selectionnes = useMemo(
-    () =>
-      filtered
-        .filter((c) => c.statut === "selectionne")
-        .sort((a, b) => a.rang - b.rang),
-    [filtered]
-  );
+  const isFiliereSelected = filiere !== "Toutes les filières";
 
-  const attente = useMemo(
-    () =>
-      filtered
-        .filter((c) => c.statut === "attente")
-        .sort((a, b) => a.rang - b.rang),
-    [filtered]
-  );
+  // Séparation sélectionnés / liste d'attente
 
   const isSearching = searchTerm.trim().length > 0;
+  const showTopByFiliere = !isSearching && filiere === "Toutes les filières";
+
+  // Séparation sélectionnés / liste d'attente
+  const selectionnes = useMemo(() => {
+    let base = filtered.filter((c) => c.statut === "selectionne");
+    
+    if (showTopByFiliere) {
+      // Pour chaque filière, on ne garde que le top 3
+      const categories = filieres.filter(f => f !== "Toutes les filières");
+      let top3All = [];
+      categories.forEach(cat => {
+        const top3 = base
+          .filter(c => c.filiere === cat)
+          .sort((a, b) => (a.rang_in_specialty || a.rang) - (b.rang_in_specialty || b.rang))
+          .slice(0, 3);
+        top3All = [...top3All, ...top3];
+      });
+      base = top3All;
+    }
+
+    return base.sort((a, b) => {
+      // Tri par filière puis par rang si on affiche le top par filière
+      if (showTopByFiliere) {
+        if (a.filiere !== b.filiere) return a.filiere.localeCompare(b.filiere);
+      }
+      const rankA = isFiliereSelected ? (a.rang_in_specialty || a.rang) : a.rang;
+      const rankB = isFiliereSelected ? (b.rang_in_specialty || b.rang) : b.rang;
+      return rankA - rankB;
+    });
+  }, [filtered, isFiliereSelected, showTopByFiliere, filieres]);
+
+  const attente = useMemo(() => {
+    return filtered
+      .filter((c) => c.statut === "attente")
+      .sort((a, b) => {
+        const rankA = isFiliereSelected ? (a.rang_in_specialty || a.rang) : a.rang;
+        const rankB = isFiliereSelected ? (b.rang_in_specialty || b.rang) : b.rang;
+        return rankA - rankB;
+      });
+  }, [filtered, isFiliereSelected]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">Chargement des résultats...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+        <span className="text-4xl mb-4">❌</span>
+        <p className="text-muted font-medium mb-4">Erreur lors du chargement des données.</p>
+        <p className="text-[10px] text-red/70 font-mono bg-red-soft px-3 py-1 rounded-md">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -62,9 +108,10 @@ export default function HomePage() {
         />
       </section>
 
-      {/* ─── Résultats de recherche (mode recherche active) ──────── */}
+      {/* ─── Contenu Principal ───────────────────────────────────── */}
       <div className="space-y-8">
         {isSearching ? (
+          /* Résultats de recherche active */
           <section>
             <SectionHeader title="Résultats de recherche" count={filtered.length} />
             {filtered.length === 0 ? (
@@ -72,53 +119,75 @@ export default function HomePage() {
             ) : (
               <div className="flex flex-col gap-1 mt-3">
                 {filtered
-                  .sort((a, b) => a.rang - b.rang)
+                  .sort((a, b) => {
+                    const rankA = isFiliereSelected ? (a.rang_in_specialty || a.rang) : a.rang;
+                    const rankB = isFiliereSelected ? (b.rang_in_specialty || b.rang) : b.rang;
+                    return rankA - rankB;
+                  })
                   .map((c, index) => (
-                    <CandidatCard key={c.id} candidat={c} index={index} />
+                    <CandidatCard 
+                      key={c.id} 
+                      candidat={c} 
+                      index={index} 
+                      useSpecialtyRank={isFiliereSelected}
+                    />
                   ))}
               </div>
             )}
           </section>
         ) : (
-          /* ─── Listes normales (sans recherche active) ─────────────── */
+          /* Listes normales (Top 3 ou Filière spécifique) */
           <>
             {/* Sélectionnés */}
             <section>
               <SectionHeader 
-                title="Candidats sélectionnés" 
-                count={selectionnes.length} 
+                title={showTopByFiliere ? "Top 3 de chaque filière" : "Candidats sélectionnés"} 
+                count={showTopByFiliere ? null : selectionnes.length} 
                 dotColor="bg-green" 
               />
               {selectionnes.length === 0 ? (
-                <EmptyState message="Aucun candidat sélectionné pour cette filière." />
+                <EmptyState message="Aucun candidat sélectionné." />
               ) : (
                 <div className="flex flex-col gap-1 mt-3">
                   {selectionnes.map((c, index) => (
-                    <CandidatCard key={c.id} candidat={c} index={index} />
+                    <CandidatCard 
+                      key={c.id} 
+                      candidat={c} 
+                      index={index} 
+                      useSpecialtyRank={true}
+                    />
                   ))}
                 </div>
               )}
             </section>
 
-            <hr className="border-border my-1" />
-
-            {/* Liste d'attente */}
-            <section>
-              <SectionHeader 
-                title="Liste d'attente" 
-                count={attente.length} 
-                dotColor="bg-primary" 
-              />
-              {attente.length === 0 ? (
-                <EmptyState message="Aucun candidat en liste d'attente." />
-              ) : (
-                <div className="flex flex-col gap-1 mt-3">
-                  {attente.map((c, index) => (
-                    <CandidatCard key={c.id} candidat={c} index={index} />
-                  ))}
-                </div>
-              )}
-            </section>
+            {/* Liste d'attente (Uniquement si pas en mode Top 3) */}
+            {!showTopByFiliere && (
+              <>
+                <hr className="border-border my-1" />
+                <section>
+                  <SectionHeader 
+                    title="Liste d'attente" 
+                    count={attente.length} 
+                    dotColor="bg-primary" 
+                  />
+                  {attente.length === 0 ? (
+                    <EmptyState message="Aucun candidat en liste d'attente." />
+                  ) : (
+                    <div className="flex flex-col gap-1 mt-3">
+                      {attente.map((c, index) => (
+                        <CandidatCard 
+                          key={c.id} 
+                          candidat={c} 
+                          index={index} 
+                          useSpecialtyRank={isFiliereSelected}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            )}
           </>
         )}
       </div>
@@ -135,9 +204,11 @@ function SectionHeader({ title, count, dotColor }) {
         {dotColor && <span className={`w-2 h-2 rounded-full ${dotColor} shadow-sm`} />}
         {title}
       </h2>
-      <span className="bg-border/50 text-muted px-2.5 py-0.5 rounded-full text-[9px] font-bold">
-        {count}
-      </span>
+      {count !== null && (
+        <span className="bg-border/50 text-muted px-2.5 py-0.5 rounded-full text-[9px] font-bold">
+          {count}
+        </span>
+      )}
     </div>
   );
 }
