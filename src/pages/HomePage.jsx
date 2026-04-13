@@ -32,34 +32,42 @@ export default function HomePage() {
   const isSearching = searchTerm.trim().length > 0;
   const showTopByFiliere = !isSearching && filiere === "Toutes les filières";
 
-  // Séparation sélectionnés / liste d'attente
-  const selectionnes = useMemo(() => {
-    let base = filtered.filter((c) => c.statut === "selectionne");
-    
-    if (showTopByFiliere) {
-      // Pour chaque filière, on ne garde que le top 3
-      const categories = filieres.filter(f => f !== "Toutes les filières");
-      let top3All = [];
-      categories.forEach(cat => {
-        const top3 = base
-          .filter(c => c.filiere === cat)
-          .sort((a, b) => (a.rang_in_specialty || a.rang) - (b.rang_in_specialty || b.rang))
-          .slice(0, 3);
-        top3All = [...top3All, ...top3];
-      });
-      base = top3All;
-    }
+const selectionnes = useMemo(() => {
+  let base = filtered.filter((c) => c.statut === "selectionne");
 
+  if (showTopByFiliere) {
+    const categories = filieres.filter(f => f !== "Toutes les filières");
+    let top3All = [];
+    categories.forEach(cat => {
+      const top3 = base
+        .filter(c => c.filiere === cat)
+        .sort((a, b) => {
+          // ✅ Toujours utiliser rang_in_specialty en priorité
+          const rankA = a.rang_in_specialty ?? a.rang;
+          const rankB = b.rang_in_specialty ?? b.rang;
+          return rankA - rankB;
+        })
+        .slice(0, 3);
+      top3All = [...top3All, ...top3];
+    });
+    base = top3All;
+
+    // ✅ Tri final : par filière alphabétique, puis par rang_in_specialty
     return base.sort((a, b) => {
-      // Tri par filière puis par rang si on affiche le top par filière
-      if (showTopByFiliere) {
-        if (a.filiere !== b.filiere) return a.filiere.localeCompare(b.filiere);
-      }
-      const rankA = isFiliereSelected ? (a.rang_in_specialty || a.rang) : a.rang;
-      const rankB = isFiliereSelected ? (b.rang_in_specialty || b.rang) : b.rang;
+      if (a.filiere !== b.filiere) return a.filiere.localeCompare(b.filiere);
+      const rankA = a.rang_in_specialty ?? a.rang;
+      const rankB = b.rang_in_specialty ?? b.rang;
       return rankA - rankB;
     });
-  }, [filtered, isFiliereSelected, showTopByFiliere, filieres]);
+  }
+
+  // Mode filière spécifique ou recherche
+  return base.sort((a, b) => {
+    const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
+    const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
+    return rankA - rankB;
+  });
+}, [filtered, isFiliereSelected, showTopByFiliere, filieres]);
 
   const attente = useMemo(() => {
     return filtered
