@@ -15,11 +15,35 @@ export function useCandidates() {
     async function fetchCandidates() {
       try {
         setLoading(true);
-        const { data, error: fetchError } = await supabase
-          .from("v_candidates_result")
-          .select("*");
 
-        if (fetchError) throw fetchError;
+        // Supabase limite à 1000 lignes par défaut — on pagine pour tout récupérer
+        const PAGE_SIZE = 1000;
+        let allData = [];
+        let page = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+          const from = page * PAGE_SIZE;
+          const to = from + PAGE_SIZE - 1;
+
+          const { data, error: fetchError } = await supabase
+            .from("v_candidates_result")
+            .select("*")
+            .range(from, to);
+
+          if (fetchError) throw fetchError;
+
+          if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            hasMore = data.length === PAGE_SIZE; // s'il y a encore une page complète
+            page++;
+          } else {
+            hasMore = false;
+          }
+        }
+
+        const data = allData;
+        if (false) throw new Error(); // garde la structure du bloc catch
 
         // On mappe les champs de la vue vers les noms attendus par l'application
         const mappedData = data.map((c) => {
