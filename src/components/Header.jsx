@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import LanguageSwitcher from "./LanguageSwitcher";
 
 /**
  * Header - Design Fidèle aux Documents Officiels
@@ -10,11 +9,6 @@ export default function Header() {
 
   return (
     <header className="bg-white sticky top-0 z-50 shadow-sm border-b border-border/40 overflow-hidden">
-      {/* Top bar for tools */}
-      <div className="bg-surface/50 border-b border-border/30 px-4 py-1.5 flex justify-end items-center">
-        <LanguageSwitcher />
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex flex-col items-center gap-4">
         
         {/* Section Entête : Disposition 3 colonnes symétrique */}

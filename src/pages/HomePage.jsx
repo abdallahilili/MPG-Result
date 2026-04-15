@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-import { SearchX, Info } from "lucide-react";
+import { SearchX } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import FiliereSelect from "../components/FiliereSelect";
 import CandidatCard from "../components/CandidatCard";
@@ -15,9 +15,24 @@ import { useCandidates } from "../hooks/useCandidates";
  * - Liste d'attente (triés par rang)
  */
 export default function HomePage() {
-  const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filiere, setFiliere] = useState("Toutes les filières");
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const searchTerm = searchParams.get("s") || "";
+  const filiere = searchParams.get("f") || "Toutes les filières";
+
+  const setSearchTerm = (val) => {
+    const next = new URLSearchParams(searchParams);
+    if (val) next.set("s", val);
+    else next.delete("s");
+    setSearchParams(next, { replace: true });
+  };
+
+  const setFiliere = (val) => {
+    const next = new URLSearchParams(searchParams);
+    if (val && val !== "Toutes les filières") next.set("f", val);
+    else next.delete("f");
+    setSearchParams(next, { replace: true });
+  };
 
   const { filieres, filterCandidates, loading, error, candidates } = useCandidates();
 
@@ -42,12 +57,9 @@ export default function HomePage() {
     let base = filtered.filter((c) => c.statut === "selectionne");
 
     return base.sort((a, b) => {
-      if (!isFiliereSelected && a.filiere !== b.filiere) {
-        return a.filiere.localeCompare(b.filiere);
-      }
-      const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : (a.rang_in_specialty ?? a.rang);
-      const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : (b.rang_in_specialty ?? b.rang);
-      return rankA - rankB;
+      const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
+      const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
+      return (rankA ?? Infinity) - (rankB ?? Infinity);
     });
   }, [filtered, isFiliereSelected]);
 
@@ -55,9 +67,9 @@ export default function HomePage() {
     return filtered
       .filter((c) => c.statut === "attente")
       .sort((a, b) => {
-        const rankA = isFiliereSelected ? (a.rang_in_specialty || a.rang) : a.rang;
-        const rankB = isFiliereSelected ? (b.rang_in_specialty || b.rang) : b.rang;
-        return rankA - rankB;
+        const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
+        const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
+        return (rankA ?? Infinity) - (rankB ?? Infinity);
       });
   }, [filtered, isFiliereSelected]);
 
@@ -65,7 +77,7 @@ export default function HomePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">{t("home.loading")}</p>
+        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">Chargement des résultats...</p>
       </div>
     );
   }
@@ -74,7 +86,7 @@ export default function HomePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
         <span className="text-4xl mb-4">❌</span>
-        <p className="text-muted font-medium mb-4">{t("home.error")}</p>
+        <p className="text-muted font-medium mb-4">Erreur lors du chargement des données.</p>
         <p className="text-[10px] text-red/70 font-mono bg-red-soft px-3 py-1 rounded-md">{error}</p>
       </div>
     );
@@ -89,8 +101,8 @@ export default function HomePage() {
       className="max-w-2xl mx-auto px-5 py-10"
     >
       {/* ─── Guide utilisateur / Banner ──────────────────────────── */}
-      <div className="rtl:text-right ltr:text-left text-lg font-bold text-muted mb-4">
-        Resultats selection MPG 2026
+      <div className="text-left text-lg font-bold text-muted mb-4">
+        Résultats sélection MPG 2026
       </div>
 
       {/* ─── Barre de recherche + filtre ─────────────────────────── */}
@@ -119,16 +131,16 @@ export default function HomePage() {
         {isSearching ? (
           /* Résultats de recherche active */
           <section>
-            <SectionHeader title={t("home.search_results")} count={filtered.length} />
+            <SectionHeader title="Résultats de recherche" count={filtered.length} />
             {filtered.length === 0 ? (
-              <EmptyState message={t("home.no_results", { term: searchTerm })} />
+              <EmptyState message={`Aucun résultat pour "${searchTerm}"`} />
             ) : (
               <div className="flex flex-col gap-1 mt-3">
                 {filtered
                   .sort((a, b) => {
-                    const rankA = isFiliereSelected ? (a.rang_in_specialty || a.rang) : a.rang;
-                    const rankB = isFiliereSelected ? (b.rang_in_specialty || b.rang) : b.rang;
-                    return rankA - rankB;
+                    const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
+                    const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
+                    return (rankA ?? Infinity) - (rankB ?? Infinity);
                   })
                   .map((c, index) => (
                     <CandidatCard
@@ -147,12 +159,12 @@ export default function HomePage() {
             {/* Sélectionnés */}
             <section>
               <SectionHeader
-                title={t("home.selected")}
+                title="Candidats sélectionnés"
                 count={selectionnes.length}
                 dotColor="bg-green"
               />
               {selectionnes.length === 0 ? (
-                <EmptyState message={t("home.no_selected")} />
+                <EmptyState message="Aucun candidat sélectionné." />
               ) : (
                 <div className="flex flex-col gap-1 mt-3">
                   {selectionnes.map((c, index) => (
@@ -160,7 +172,7 @@ export default function HomePage() {
                       key={c.id}
                       candidat={c}
                       index={index}
-                      useSpecialtyRank={true}
+                      useSpecialtyRank={isFiliereSelected}
                     />
                   ))}
                 </div>
@@ -173,7 +185,7 @@ export default function HomePage() {
                 <hr className="border-border border-dashed my-6" />
                 <section>
                   <SectionHeader
-                    title={t("home.waiting_list")}
+                    title="Liste d'attente"
                     count={attente.length}
                     dotColor="bg-orange"
                   />

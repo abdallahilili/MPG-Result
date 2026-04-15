@@ -1,14 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Medal } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 /**
  * CandidatCard – ligne cliquable représentant un candidat dans la liste
  */
 export default function CandidatCard({ candidat, index, showRang = true, useSpecialtyRank = false }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const isSelectionne = candidat.statut === "selectionne";
   const isAttente = candidat.statut === "attente";
   const isRejete = candidat.statut === "rejete";
@@ -28,12 +26,12 @@ export default function CandidatCard({ candidat, index, showRang = true, useSpec
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && navigate(`/candidat/${candidat.id}`)}
-      aria-label={t("candidat.see_profile", { name: candidat.nom })}
+      aria-label={`Voir le profil de ${candidat.nom}`}
     >
       {/* Rang */}
       {showRang && (
-        <span className="flex items-center gap-0.5 text-xs font-bold text-muted min-w-[32px]">
-          <Medal size={13} strokeWidth={2.5} className="text-muted/30" />
+        <span className="flex items-center gap-0.5 text-[14px] font-bold text-muted min-w-[24px]">
+          <Medal size={14} strokeWidth={2.5} className="text-muted/35" />
           {displayRank}
         </span>
       )}
@@ -50,7 +48,7 @@ export default function CandidatCard({ candidat, index, showRang = true, useSpec
 
       {/* Badge statut */}
       <span className={`
-        whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest
+        whitespace-nowrap px-2 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest
         ${isSelectionne 
           ? 'bg-green-soft text-green' 
           : isAttente 
@@ -58,7 +56,7 @@ export default function CandidatCard({ candidat, index, showRang = true, useSpec
           : 'bg-red-soft text-red'
         }
       `}>
-        {isSelectionne ? t("status.selectionne") : isAttente ? t("status.attente_short") : t("status.rejete")}
+        {isSelectionne ? "Sélectionné" : isAttente ? "Attente" : "Rejeté"}
       </span>
 
       <div className="text-muted/30">

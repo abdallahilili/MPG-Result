@@ -1,11 +1,9 @@
 import { GraduationCap, ChevronDown } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 /**
  * FiliereSelect – menu déroulant pour sélectionner une filière
  */
 export default function FiliereSelect({ filieres, value, onChange }) {
-  const { t } = useTranslation();
   return (
     <div className="relative flex items-center w-full">
       <div className="absolute left-4 flex items-center pointer-events-none text-muted">
@@ -15,11 +13,11 @@ export default function FiliereSelect({ filieres, value, onChange }) {
         className="w-full h-12 pl-11 pr-10 bg-surface border border-border rounded-lg text-xs font-medium focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer shadow-soft text-[#1c1917]"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        aria-label={t("filiere.select")}
+        aria-label="Sélectionner une filière"
       >
         {filieres.map((f) => (
           <option key={f} value={f}>
-            {f === "Toutes les filières" ? t("filiere.all") : f}
+            {f}
           </option>
         ))}
       </select>
