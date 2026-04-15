@@ -98,7 +98,7 @@ export function useCandidates() {
   }, [candidates]);
 
   /**
-   * Trouve un candidat par son id
+   * Trouve un candidat par son id (depuis la liste chargée)
    */
   const getCandidatById = useCallback((id) => {
     if (!id || !candidates.length) return null;
@@ -107,5 +107,27 @@ export function useCandidates() {
     }) || null;
   }, [candidates]);
 
-  return { candidates, filieres, filterCandidates, getCandidatById, loading, error };
+  /**
+   * Récupère les détails complets d'un candidat (scores partiels) depuis la table candidates
+   */
+  const getCandidatDetailById = useCallback(async (id) => {
+    if (!id) return null;
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("candidates")
+        .select("id, score_niveau, score_experience, score_motivation, score_adequation, score_disponibilite, score_total, specialty, etat")
+        .eq("id", id)
+        .single();
+      if (fetchError) {
+        console.warn("Scores partiels non disponibles:", fetchError.message);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.warn("Erreur fetch détails candidat:", err);
+      return null;
+    }
+  }, []);
+
+  return { candidates, filieres, filterCandidates, getCandidatById, getCandidatDetailById, loading, error };
 }
