@@ -7,7 +7,6 @@ import { motion, animate } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
   ArrowLeft,
-  ArrowLeft,
   GraduationCap, Briefcase, Flame, Target, Clock3,
   CheckCircle2, XCircle, Clock, Sparkles, Printer
 } from "lucide-react";
