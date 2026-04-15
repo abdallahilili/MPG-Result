@@ -89,14 +89,8 @@ export default function HomePage() {
       className="max-w-2xl mx-auto px-5 py-10"
     >
       {/* ─── Guide utilisateur / Banner ──────────────────────────── */}
-      <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 mb-8 flex gap-3 shadow-sm">
-        <Info className="text-green shrink-0 mt-0.5" size={20} />
-        <div>
-          <h3 className="text-sm font-bold text-green mb-1">Résultats publiés — Session 2025/2026</h3>
-          <p className="text-xs text-green/80 font-medium leading-relaxed">
-            Pour trouver votre résultat, utilisez la recherche ci-dessous en tapant votre <strong>Nom</strong>, votre <strong>Numéro de téléphone</strong> ou votre <strong>NNI</strong>. Vous pouvez aussi filtrer par filière.
-          </p>
-        </div>
+      <div className="rtl:text-right ltr:text-left text-lg font-bold text-muted mb-4">
+        Resultats selection MPG 2026
       </div>
 
       {/* ─── Barre de recherche + filtre ─────────────────────────── */}
@@ -137,10 +131,10 @@ export default function HomePage() {
                     return rankA - rankB;
                   })
                   .map((c, index) => (
-                    <CandidatCard 
-                      key={c.id} 
-                      candidat={c} 
-                      index={index} 
+                    <CandidatCard
+                      key={c.id}
+                      candidat={c}
+                      index={index}
                       useSpecialtyRank={isFiliereSelected}
                     />
                   ))}
@@ -152,20 +146,20 @@ export default function HomePage() {
           <div className="space-y-6">
             {/* Sélectionnés */}
             <section>
-              <SectionHeader 
-                title={t("home.selected")} 
-                count={selectionnes.length} 
-                dotColor="bg-green" 
+              <SectionHeader
+                title={t("home.selected")}
+                count={selectionnes.length}
+                dotColor="bg-green"
               />
               {selectionnes.length === 0 ? (
                 <EmptyState message={t("home.no_selected")} />
               ) : (
                 <div className="flex flex-col gap-1 mt-3">
                   {selectionnes.map((c, index) => (
-                    <CandidatCard 
-                      key={c.id} 
-                      candidat={c} 
-                      index={index} 
+                    <CandidatCard
+                      key={c.id}
+                      candidat={c}
+                      index={index}
                       useSpecialtyRank={true}
                     />
                   ))}
@@ -178,17 +172,17 @@ export default function HomePage() {
               <>
                 <hr className="border-border border-dashed my-6" />
                 <section>
-                  <SectionHeader 
-                    title={t("home.waiting_list")} 
-                    count={attente.length} 
-                    dotColor="bg-orange" 
+                  <SectionHeader
+                    title={t("home.waiting_list")}
+                    count={attente.length}
+                    dotColor="bg-orange"
                   />
                   <div className="flex flex-col gap-1 mt-3">
                     {attente.map((c, index) => (
-                      <CandidatCard 
-                        key={c.id} 
-                        candidat={c} 
-                        index={index} 
+                      <CandidatCard
+                        key={c.id}
+                        candidat={c}
+                        index={index}
                         useSpecialtyRank={isFiliereSelected}
                       />
                     ))}
