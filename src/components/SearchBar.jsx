@@ -12,16 +12,12 @@ export default function SearchBar({ onSearch }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSearch(localValue);
   };
 
   const handleChange = (e) => {
     const val = e.target.value;
     setLocalValue(val);
-    // Si l'utilisateur efface tout, on réinitialise automatiquement la liste
-    if (val.trim() === "") {
-      onSearch("");
-    }
+    onSearch(val); // Instant search
   };
 
   const handleClear = () => {

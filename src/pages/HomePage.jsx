@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { SearchX } from "lucide-react";
+import { SearchX, Info } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import FiliereSelect from "../components/FiliereSelect";
 import CandidatCard from "../components/CandidatCard";
@@ -32,44 +32,24 @@ export default function HomePage() {
   // Séparation sélectionnés / liste d'attente
 
   const isSearching = searchTerm.trim().length > 0;
-  const showTopByFiliere = !isSearching && filiere === "Toutes les filières";
 
-const selectionnes = useMemo(() => {
-  let base = filtered.filter((c) => c.statut === "selectionne");
+  // STATS : Calcul des rejetés
+  const rejetes = useMemo(() => {
+    return filtered.filter((c) => c.statut === "rejete");
+  }, [filtered]);
 
-  if (showTopByFiliere) {
-    const categories = filieres.filter(f => f !== "Toutes les filières");
-    let top3All = [];
-    categories.forEach(cat => {
-      const top3 = base
-        .filter(c => c.filiere === cat)
-        .sort((a, b) => {
-          // ✅ Toujours utiliser rang_in_specialty en priorité
-          const rankA = a.rang_in_specialty ?? a.rang;
-          const rankB = b.rang_in_specialty ?? b.rang;
-          return rankA - rankB;
-        })
-        .slice(0, 3);
-      top3All = [...top3All, ...top3];
-    });
-    base = top3All;
+  const selectionnes = useMemo(() => {
+    let base = filtered.filter((c) => c.statut === "selectionne");
 
-    // ✅ Tri final : par filière alphabétique, puis par rang_in_specialty
     return base.sort((a, b) => {
-      if (a.filiere !== b.filiere) return a.filiere.localeCompare(b.filiere);
-      const rankA = a.rang_in_specialty ?? a.rang;
-      const rankB = b.rang_in_specialty ?? b.rang;
+      if (!isFiliereSelected && a.filiere !== b.filiere) {
+        return a.filiere.localeCompare(b.filiere);
+      }
+      const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : (a.rang_in_specialty ?? a.rang);
+      const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : (b.rang_in_specialty ?? b.rang);
       return rankA - rankB;
     });
-  }
-
-  // Mode filière spécifique ou recherche
-  return base.sort((a, b) => {
-    const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
-    const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
-    return rankA - rankB;
-  });
-}, [filtered, isFiliereSelected, showTopByFiliere, filieres]);
+  }, [filtered, isFiliereSelected]);
 
   const attente = useMemo(() => {
     return filtered
@@ -108,8 +88,19 @@ const selectionnes = useMemo(() => {
       transition={{ duration: 0.22, ease: "easeOut" }}
       className="max-w-2xl mx-auto px-5 py-10"
     >
+      {/* ─── Guide utilisateur / Banner ──────────────────────────── */}
+      <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 mb-8 flex gap-3 shadow-sm">
+        <Info className="text-green shrink-0 mt-0.5" size={20} />
+        <div>
+          <h3 className="text-sm font-bold text-green mb-1">Résultats publiés — Session 2025/2026</h3>
+          <p className="text-xs text-green/80 font-medium leading-relaxed">
+            Pour trouver votre résultat, utilisez la recherche ci-dessous en tapant votre <strong>Nom</strong>, votre <strong>Numéro de téléphone</strong> ou votre <strong>NNI</strong>. Vous pouvez aussi filtrer par filière.
+          </p>
+        </div>
+      </div>
+
       {/* ─── Barre de recherche + filtre ─────────────────────────── */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-10">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
         <SearchBar onSearch={setSearchTerm} />
         <FiliereSelect
           filieres={filieres}
@@ -117,6 +108,17 @@ const selectionnes = useMemo(() => {
           onChange={setFiliere}
         />
       </section>
+
+      {/* ─── Statistiques de filière ─────────────────────────────── */}
+      {isFiliereSelected && !isSearching && (
+        <div className="flex flex-wrap items-center gap-2 mb-8 p-3 bg-surface rounded-lg border border-border text-[10px] font-bold uppercase tracking-widest shadow-soft">
+          <span className="text-green flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green" /> {selectionnes.length} sélectionnés</span>
+          <span className="text-muted/30">|</span>
+          <span className="text-orange flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-orange" /> {attente.length} en attente</span>
+          <span className="text-muted/30">|</span>
+          <span className="text-red flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red" /> {rejetes.length} rejetés</span>
+        </div>
+      )}
 
       {/* ─── Contenu Principal ───────────────────────────────────── */}
       <div className="space-y-8">
@@ -146,13 +148,13 @@ const selectionnes = useMemo(() => {
             )}
           </section>
         ) : (
-          /* Listes normales (Top 3 ou Filière spécifique) */
-          <>
+          /* Listes normales (Toutes les filières ou Filière spécifique) */
+          <div className="space-y-6">
             {/* Sélectionnés */}
             <section>
               <SectionHeader 
-                title={showTopByFiliere ? t("home.top_3") : t("home.selected")} 
-                count={showTopByFiliere ? null : selectionnes.length} 
+                title={t("home.selected")} 
+                count={selectionnes.length} 
                 dotColor="bg-green" 
               />
               {selectionnes.length === 0 ? (
@@ -171,34 +173,30 @@ const selectionnes = useMemo(() => {
               )}
             </section>
 
-            {/* Liste d'attente (Uniquement si pas en mode Top 3) */}
-            {!showTopByFiliere && (
+            {/* Liste d'attente */}
+            {attente.length > 0 && (
               <>
-                <hr className="border-border my-1" />
+                <hr className="border-border border-dashed my-6" />
                 <section>
                   <SectionHeader 
                     title={t("home.waiting_list")} 
                     count={attente.length} 
-                    dotColor="bg-primary" 
+                    dotColor="bg-orange" 
                   />
-                  {attente.length === 0 ? (
-                    <EmptyState message={t("home.no_waiting")} />
-                  ) : (
-                    <div className="flex flex-col gap-1 mt-3">
-                      {attente.map((c, index) => (
-                        <CandidatCard 
-                          key={c.id} 
-                          candidat={c} 
-                          index={index} 
-                          useSpecialtyRank={isFiliereSelected}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-1 mt-3">
+                    {attente.map((c, index) => (
+                      <CandidatCard 
+                        key={c.id} 
+                        candidat={c} 
+                        index={index} 
+                        useSpecialtyRank={isFiliereSelected}
+                      />
+                    ))}
+                  </div>
                 </section>
               </>
             )}
-          </>
+          </div>
         )}
       </div>
     </motion.div>

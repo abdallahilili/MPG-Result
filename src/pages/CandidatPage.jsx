@@ -7,8 +7,9 @@ import { motion, animate } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
   ArrowLeft,
+  ArrowLeft,
   GraduationCap, Briefcase, Flame, Target, Clock3,
-  CheckCircle2, XCircle, Clock, Sparkles,
+  CheckCircle2, XCircle, Clock, Sparkles, Printer
 } from "lucide-react";
 import { useCandidates } from "../hooks/useCandidates";
 
@@ -232,17 +233,30 @@ export default function CandidatPage() {
   return (
     <div className="w-full min-h-screen bg-[#f8f7f5] flex flex-col items-center px-4 py-6 pb-16">
 
-      {/* ── Back button ─────────────────────────────────────────────── */}
-      <motion.button
-        initial={{ opacity: 0, x: -8 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.05 }}
-        onClick={() => navigate("/")}
-        className="self-start flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-5 hover:opacity-70 transition-opacity"
-      >
-        <ArrowLeft size={13} strokeWidth={3} />
-        Retour
-      </motion.button>
+      {/* ── Top actions ─────────────────────────────────────────────── */}
+      <div className="w-full max-w-sm flex justify-between items-end mb-5">
+        <motion.button
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.05 }}
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:opacity-70 transition-opacity print:hidden"
+        >
+          <ArrowLeft size={13} strokeWidth={3} />
+          Retour
+        </motion.button>
+
+        <motion.button
+          initial={{ opacity: 0, x: 8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          onClick={() => window.print()}
+          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:opacity-70 transition-opacity print:hidden"
+        >
+          <Printer size={13} strokeWidth={3} />
+          Imprimer
+        </motion.button>
+      </div>
 
       {/* ── Main evaluation card ─────────────────────────────────────── */}
       <motion.div
@@ -313,54 +327,83 @@ export default function CandidatPage() {
           </motion.div>
         </div>
 
-        {/* ── Score section ─────────────────────────────────────────── */}
-        <div className="flex flex-col items-center pt-7 pb-5 px-6 gap-4">
-          <ScoreRing score={score} />
-          <div className="flex flex-wrap justify-center gap-2">
-            <Badge bg={tier.bg} text={tier.text} delay={0.7}>
-              <Sparkles size={10} />
-              {tier.label}
-            </Badge>
-            <Badge bg={recState.bg} text={recState.text} delay={0.8}>
-              <RecIcon size={10} />
-              {recState.label}
-            </Badge>
+        {/* ── Status Banner (UX Priorité 1) ─────────────────────────── */}
+        <div 
+          className="px-6 py-4 flex flex-col items-center justify-center text-center border-y border-slate-100"
+          style={{ backgroundColor: recState.bg }}
+        >
+          <div className="flex items-center gap-2 mb-1" style={{ color: recState.text }}>
+            <RecIcon size={20} strokeWidth={2.5} />
+            <span className="text-lg font-black uppercase tracking-widest">{recState.label}</span>
           </div>
-        </div>
-
-        <div className="h-px bg-slate-100 mx-6" />
-
-        {/* ── Grille officielle ─────────────────────────────────────── */}
-        <div className="px-6 py-5">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.45 }}
-            className="text-[8px] font-black uppercase tracking-[0.35em] text-slate-300 mb-4 text-center"
-          >
-            Grille officielle · /100
-          </motion.p>
-
-          {detailLoading ? (
-            <div className="flex justify-center py-4">
-              <div
-                className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: "#e2e8f0", borderTopColor: BRAND }}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3.5">
-              {GRILLE.map((c, i) => (
-                <CriterionRow
-                  key={c.key}
-                  criterion={c}
-                  score={detail ? detail[c.key] : (c.fixed ?? null)}
-                  index={i}
-                />
-              ))}
-            </div>
+          {candidat.statut === "attente" && (
+            <p className="text-[10px] font-medium leading-snug opacity-80" style={{ color: recState.text }}>
+              Vous êtes sur la liste d'attente. Vous serez contacté si une place se libère.
+            </p>
+          )}
+          {candidat.statut === "selectionne" && (
+            <p className="text-[10px] font-medium leading-snug opacity-80" style={{ color: recState.text }}>
+              Félicitations ! Vous êtes retenu pour cette filière.
+            </p>
           )}
         </div>
+
+        {/* ── Score section ─────────────────────────────────────────── */}
+        {score > 0 ? (
+          <>
+            <div className="flex flex-col items-center pt-7 pb-5 px-6 gap-4">
+              <ScoreRing score={score} />
+              <div className="flex flex-wrap justify-center gap-2">
+                <Badge bg={tier.bg} text={tier.text} delay={0.7}>
+                  <Sparkles size={10} />
+                  {tier.label}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="h-px bg-slate-100 mx-6" />
+
+            {/* ── Grille officielle ─────────────────────────────────────── */}
+            <div className="px-6 py-5">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.45 }}
+                className="text-[8px] font-black uppercase tracking-[0.35em] text-slate-300 mb-4 text-center"
+              >
+                Grille officielle · /100
+              </motion.p>
+
+              {detailLoading ? (
+                <div className="flex justify-center py-4">
+                  <div
+                    className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+                    style={{ borderColor: "#e2e8f0", borderTopColor: BRAND }}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3.5">
+                  {GRILLE.map((c, i) => (
+                    <CriterionRow
+                      key={c.key}
+                      criterion={c}
+                      score={detail ? detail[c.key] : (c.fixed ?? null)}
+                      index={i}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="px-6 py-10 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+              <Clock3 size={20} className="text-slate-400" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-600">Dossier non évalué par l'IA</h3>
+            <p className="text-[10px] text-slate-400 mt-1">Le score détaillé n'est pas disponible pour ce candidat.</p>
+          </div>
+        )}
 
         {/* ── Footer info ───────────────────────────────────────────── */}
         <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex items-center justify-between">
