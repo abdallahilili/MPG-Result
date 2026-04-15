@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Medal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * CandidatCard – ligne cliquable représentant un candidat dans la liste
  */
 export default function CandidatCard({ candidat, index, showRang = true, useSpecialtyRank = false }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isSelectionne = candidat.statut === "selectionne";
   const isAttente = candidat.statut === "attente";
   const isRejete = candidat.statut === "rejete";
@@ -26,7 +28,7 @@ export default function CandidatCard({ candidat, index, showRang = true, useSpec
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && navigate(`/candidat/${candidat.id}`)}
-      aria-label={`Voir le profil de ${candidat.nom}`}
+      aria-label={t("candidat.see_profile", { name: candidat.nom })}
     >
       {/* Rang */}
       {showRang && (
@@ -56,7 +58,7 @@ export default function CandidatCard({ candidat, index, showRang = true, useSpec
           : 'bg-red-soft text-red'
         }
       `}>
-        {isSelectionne ? "Sélectionné" : isAttente ? "Attente" : "Rejeté"}
+        {isSelectionne ? t("status.selectionne") : isAttente ? t("status.attente_short") : t("status.rejete")}
       </span>
 
       <div className="text-muted/30">

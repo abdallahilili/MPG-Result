@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Search, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * SearchBar – champ de recherche unique (nom / téléphone / NNI)
  * Gère son propre état local et ne déclenche la recherche que sur validation.
  */
 export default function SearchBar({ onSearch }) {
+  const { t } = useTranslation();
   const [localValue, setLocalValue] = useState("");
 
   const handleSubmit = (e) => {
@@ -32,10 +34,10 @@ export default function SearchBar({ onSearch }) {
       <input
         type="text"
         className="w-full h-12 pl-4 pr-32 bg-surface border border-border rounded-lg text-xs font-medium focus:outline-none focus:border-primary transition-all placeholder:text-muted/60 shadow-soft"
-        placeholder="Nom, téléphone ou NNI…"
+        placeholder={t("search.placeholder")}
         value={localValue}
         onChange={handleChange}
-        aria-label="Recherche"
+        aria-label={t("search.placeholder")}
       />
       <div className="absolute right-1.5 flex items-center gap-1">
         {localValue && (
@@ -43,7 +45,7 @@ export default function SearchBar({ onSearch }) {
             type="button"
             className="p-1.5 hover:bg-bg rounded-full transition-colors text-muted"
             onClick={handleClear}
-            aria-label="Effacer"
+            aria-label={t("search.clear")}
           >
             <X size={16} strokeWidth={2} />
           </button>
@@ -53,7 +55,7 @@ export default function SearchBar({ onSearch }) {
           className="bg-primary text-white h-9 px-3.5 rounded-md text-[10px] font-bold uppercase tracking-widest hover:bg-primary-dark transition-all shadow-sm flex items-center gap-2 active:scale-95"
         >
           <Search size={14} strokeWidth={2.5} />
-          <span>Chercher</span>
+          <span>{t("search.button")}</span>
         </button>
       </div>
     </form>

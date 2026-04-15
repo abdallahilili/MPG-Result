@@ -1,0 +1,49 @@
+{
+  "search": {
+    "placeholder": "Nom, téléphone ou NNI…",
+    "clear": "Effacer",
+    "button": "Chercher"
+  },
+  "filiere": {
+    "all": "Toutes les filières",
+    "select": "Sélectionner une filière"
+  },
+  "status": {
+    "selectionne": "Sélectionné",
+    "attente": "En Attente",
+    "rejete": "Rejeté",
+    "attente_short": "Attente"
+  },
+  "home": {
+    "loading": "Chargement des résultats...",
+    "error": "Erreur lors du chargement des données.",
+    "search_results": "Résultats de recherche",
+    "no_results": "Aucun résultat pour \"{{term}}\"",
+    "top_3": "Top 3 de chaque filière",
+    "selected": "Candidats sélectionnés",
+    "no_selected": "Aucun candidat sélectionné.",
+    "waiting_list": "Liste d'attente",
+    "no_waiting": "Aucun candidat en liste d'attente."
+  },
+  "candidat": {
+    "loading": "Chargement...",
+    "error": "Erreur lors de la récupération des données.",
+    "back_home": "Retour à l'accueil",
+    "not_found": "Candidat introuvable.",
+    "searched_id": "ID Recherché: {{id}} | Total Chargé: {{total}}",
+    "back": "Retour",
+    "profile_title": "Profil Candidat",
+    "national_rank": "Rang National",
+    "specialty_rank": "Dans la Spécialité",
+    "points": "Points / 100",
+    "phone": "Téléphone",
+    "nni": "Numéro NNI",
+    "not_provided": "Non renseigné",
+    "folder_status": "État du Dossier",
+    "email": "Adresse Email",
+    "see_profile": "Voir le profil de {{name}}"
+  },
+  "footer": {
+    "copyright": "Copyright Rawafid services"
+  }
+}

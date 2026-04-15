@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { SearchX } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import FiliereSelect from "../components/FiliereSelect";
@@ -14,6 +15,7 @@ import { useCandidates } from "../hooks/useCandidates";
  * - Liste d'attente (triés par rang)
  */
 export default function HomePage() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [filiere, setFiliere] = useState("Toutes les filières");
 
@@ -83,7 +85,7 @@ const selectionnes = useMemo(() => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">Chargement des résultats...</p>
+        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">{t("home.loading")}</p>
       </div>
     );
   }
@@ -92,7 +94,7 @@ const selectionnes = useMemo(() => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
         <span className="text-4xl mb-4">❌</span>
-        <p className="text-muted font-medium mb-4">Erreur lors du chargement des données.</p>
+        <p className="text-muted font-medium mb-4">{t("home.error")}</p>
         <p className="text-[10px] text-red/70 font-mono bg-red-soft px-3 py-1 rounded-md">{error}</p>
       </div>
     );
@@ -121,9 +123,9 @@ const selectionnes = useMemo(() => {
         {isSearching ? (
           /* Résultats de recherche active */
           <section>
-            <SectionHeader title="Résultats de recherche" count={filtered.length} />
+            <SectionHeader title={t("home.search_results")} count={filtered.length} />
             {filtered.length === 0 ? (
-              <EmptyState message={`Aucun résultat pour "${searchTerm}"`} />
+              <EmptyState message={t("home.no_results", { term: searchTerm })} />
             ) : (
               <div className="flex flex-col gap-1 mt-3">
                 {filtered
@@ -149,12 +151,12 @@ const selectionnes = useMemo(() => {
             {/* Sélectionnés */}
             <section>
               <SectionHeader 
-                title={showTopByFiliere ? "Top 3 de chaque filière" : "Candidats sélectionnés"} 
+                title={showTopByFiliere ? t("home.top_3") : t("home.selected")} 
                 count={showTopByFiliere ? null : selectionnes.length} 
                 dotColor="bg-green" 
               />
               {selectionnes.length === 0 ? (
-                <EmptyState message="Aucun candidat sélectionné." />
+                <EmptyState message={t("home.no_selected")} />
               ) : (
                 <div className="flex flex-col gap-1 mt-3">
                   {selectionnes.map((c, index) => (
@@ -175,12 +177,12 @@ const selectionnes = useMemo(() => {
                 <hr className="border-border my-1" />
                 <section>
                   <SectionHeader 
-                    title="Liste d'attente" 
+                    title={t("home.waiting_list")} 
                     count={attente.length} 
                     dotColor="bg-primary" 
                   />
                   {attente.length === 0 ? (
-                    <EmptyState message="Aucun candidat en liste d'attente." />
+                    <EmptyState message={t("home.no_waiting")} />
                   ) : (
                     <div className="flex flex-col gap-1 mt-3">
                       {attente.map((c, index) => (

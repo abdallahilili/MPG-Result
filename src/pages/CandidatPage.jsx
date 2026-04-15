@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { 
   ArrowLeft, BookOpen, Phone, CreditCard, 
   CheckCircle2, Clock, XCircle, Mail, FileCheck, Check
@@ -13,6 +14,7 @@ import { useCandidates } from "../hooks/useCandidates";
 export default function CandidatPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { getCandidatById, loading, error, candidates } = useCandidates();
 
   const candidat = getCandidatById(id);
@@ -29,9 +31,9 @@ export default function CandidatPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
         <span className="text-4xl mb-4">❌</span>
-        <p className="text-muted font-medium">Erreur lors de la récupération des données.</p>
+        <p className="text-muted font-medium">{t("candidat.error")}</p>
         <p className="text-[10px] text-red/70 font-mono mt-2">{error}</p>
-        <button onClick={() => navigate("/")} className="mt-6 text-primary font-bold text-sm">Retour à l'accueil</button>
+        <button onClick={() => navigate("/")} className="mt-6 text-primary font-bold text-sm">{t("candidat.back_home")}</button>
       </div>
     );
   }
@@ -44,15 +46,15 @@ export default function CandidatPage() {
         className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center"
       >
         <span className="text-4xl mb-4">⚠️</span>
-        <p className="text-muted mb-2 font-medium">Candidat introuvable.</p>
+        <p className="text-muted mb-2 font-medium">{t("candidat.not_found")}</p>
         <p className="text-[10px] text-muted/50 mb-6 uppercase tracking-widest font-bold">
-          ID Recherché: {id} | Total Chargé: {candidates.length}
+          {t("candidat.searched_id", { id, total: candidates.length })}
         </p>
         <button 
           onClick={() => navigate("/")}
           className="flex items-center gap-2 text-primary font-bold transition-all hover:gap-3"
         >
-          <ArrowLeft size={18} /> Retour à l'accueil
+          <ArrowLeft size={18} /> {t("candidat.back_home")}
         </button>
       </motion.div>
     );
@@ -67,7 +69,7 @@ export default function CandidatPage() {
       soft: "bg-green/5",
       border: "border-green/20",
       text: "text-green",
-      label: "Sélectionné",
+      label: t("status.selectionne"),
       icon: <Check size={32} />
     },
     attente: {
@@ -75,7 +77,7 @@ export default function CandidatPage() {
       soft: "bg-orange/5",
       border: "border-orange/20",
       text: "text-orange",
-      label: "En Attente",
+      label: t("status.attente"),
       icon: <Clock size={32} />
     },
     rejete: {
@@ -83,7 +85,7 @@ export default function CandidatPage() {
       soft: "bg-red/5",
       border: "border-red/20",
       text: "text-red",
-      label: "Rejeté",
+      label: t("status.rejete"),
       icon: <XCircle size={32} />
     }
   };
@@ -102,10 +104,10 @@ export default function CandidatPage() {
           className="group flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors"
           onClick={() => navigate("/")}
         >
-          <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
-          Retour
+          <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform rtl:group-hover:translate-x-1 rtl:rotate-180" />
+          {t("candidat.back")}
         </button>
-        <span className="text-[10px] font-bold text-muted/30 uppercase tracking-[0.3em]">Profil Candidat</span>
+        <span className="text-[10px] font-bold text-muted/30 uppercase tracking-[0.3em]">{t("candidat.profile_title")}</span>
       </div>
 
       {/* ─── Main Dashboard ───────────────────────────────────── */}
@@ -123,15 +125,15 @@ export default function CandidatPage() {
 
         {/* Rangs Grid */}
         <div className="grid grid-cols-2 border-y border-border/40 bg-surface/50">
-          <div className="py-4 flex flex-col items-center justify-center border-r border-border/40">
-            <span className="text-[8px] font-bold text-muted/50 uppercase tracking-widest mb-1">Rang National</span>
+          <div className="py-4 flex flex-col items-center justify-center border-r-[1px] rtl:border-l-[1px] rtl:border-r-0 border-border/40">
+            <span className="text-[8px] font-bold text-muted/50 uppercase tracking-widest mb-1">{t("candidat.national_rank")}</span>
             <div className="flex items-baseline gap-1">
               <span className="text-xs font-bold text-muted/30">#</span>
               <span className="text-xl font-black text-[#1c1917]">{candidat.rang}</span>
             </div>
           </div>
           <div className="py-4 flex flex-col items-center justify-center">
-            <span className="text-[8px] font-bold text-muted/50 uppercase tracking-widest mb-1">Dans la Spécialité</span>
+            <span className="text-[8px] font-bold text-muted/50 uppercase tracking-widest mb-1">{t("candidat.specialty_rank")}</span>
             <div className={`flex items-baseline gap-1 ${theme.text}`}>
               <span className="text-xs font-bold opacity-30">#</span>
               <span className="text-xl font-black">{candidat.rang_in_specialty}</span>
@@ -195,7 +197,7 @@ export default function CandidatPage() {
               </motion.div>
               <div className="flex flex-col items-center">
                 <span className="text-2xl font-black leading-none">{score}</span>
-                <span className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-tighter">Points / 100</span>
+                <span className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-tighter">{t("candidat.points")}</span>
               </div>
             </div>
           </div>
@@ -213,10 +215,10 @@ export default function CandidatPage() {
 
         {/* Info Tiles Grid */}
         <div className="p-4 pt-0 bg-bg/20 grid grid-cols-2 gap-3 border-t border-border/40">
-          <DetailTile icon={<Phone size={15} />} label="Téléphone" value={candidat.telephone} />
-          <DetailTile icon={<CreditCard size={15} />} label="Numéro NNI" value={candidat.nni || "Non renseigné"} />
-          <DetailTile icon={<FileCheck size={15} />} label="État du Dossier" value={candidat.status} color={theme.text} />
-          <DetailTile icon={<Mail size={15} />} label="Adresse Email" value={candidat.email_addr} />
+          <DetailTile icon={<Phone size={15} />} label={t("candidat.phone")} value={candidat.telephone} />
+          <DetailTile icon={<CreditCard size={15} />} label={t("candidat.nni")} value={candidat.nni || t("candidat.not_provided")} />
+          <DetailTile icon={<FileCheck size={15} />} label={t("candidat.folder_status")} value={candidat.status} color={theme.text} />
+          <DetailTile icon={<Mail size={15} />} label={t("candidat.email")} value={candidat.email_addr} />
         </div>
       </div>
     </motion.div>
