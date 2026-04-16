@@ -182,7 +182,7 @@ export default function CandidatPage() {
 
           {/* Info Tiles Grid */}
           <div className="p-0 pt-2 bg-bg/20 w-full grid grid-cols-2 gap-3 border-t border-border/40">
-            <DetailTile icon={<Phone size={15} />} label="Téléphone" value={candidat.telephone ? "**" + candidat.telephone.slice(3) : "–"} />
+            <DetailTile icon={<Phone size={15} />} label="Téléphone" value={candidat.telephone ? "***" + candidat.telephone.slice(2) : "–"} />
             <DetailTile icon={<IdCard size={15} />} label="Numéro NNI" value={candidat.nni ? "****" + candidat.nni.slice(3) : "–"} />
           </div>
         </div>
