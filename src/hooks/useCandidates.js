@@ -76,7 +76,12 @@ export function useCandidates() {
         setCandidates(mappedData);
       } catch (err) {
         console.error("Erreur lors du chargement des candidats:", err);
-        setError(err.message);
+        // Gestion explicite de l'erreur réseau (ERR_NAME_NOT_RESOLVED / Network Error)
+        if (!navigator.onLine || err.message?.includes("fetch") || err.name === "TypeError") {
+          setError("Erreur de connexion : Impossible de joindre Supabase (ERR_NAME_NOT_RESOLVED).");
+        } else {
+          setError(err.message || "Une erreur inattendue est survenue.");
+        }
       } finally {
         setLoading(false);
       }
@@ -140,16 +145,20 @@ export function useCandidates() {
     try {
       const { data, error: fetchError } = await supabase
         .from("candidates")
-        .select("id, score_niveau, score_experience, score_motivation, score_adequation, score_disponibilite, score_total, specialty, etat")
+        .select("id, score_niveau,score_dossier, score_experience, score_motivation, score_adequation, score_disponibilite, score_total, specialty, etat")
         .eq("id", id)
         .single();
       if (fetchError) {
+        // En cas d'erreur de résolution DNS
+        if (fetchError.message?.includes("fetch") || !navigator.onLine) {
+          throw new Error("ERR_NAME_NOT_RESOLVED");
+        }
         console.warn("Scores partiels non disponibles:", fetchError.message);
         return null;
       }
       return data;
     } catch (err) {
-      console.warn("Erreur fetch détails candidat:", err);
+      console.warn("Erreur fetch détails candidat:", err.message);
       return null;
     }
   }, []);

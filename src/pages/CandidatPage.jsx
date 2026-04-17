@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
   ArrowLeft, Phone, IdCard,
   Clock, XCircle, Check,
-  GraduationCap, Briefcase, Flame, Target, Clock3
+  GraduationCap, Briefcase, Flame, Target, Clock3, FileText
 } from "lucide-react";
 import { useCandidates } from "../hooks/useCandidates";
 
@@ -15,6 +15,7 @@ const GRILLE = [
   { key: "score_experience", label: "Expérience", max: 20, icon: Briefcase },
   { key: "score_motivation", label: "Motivation", max: 20, icon: Flame },
   { key: "score_adequation", label: "Adéquation", max: 20, icon: Target },
+  { key: "score_dossier", label: "Dossier", max: 10, icon: FileText },
   { key: "score_disponibilite", label: "Disponibilité", max: 5, icon: Clock3, fixed: 5 },
 ];
 
@@ -83,7 +84,7 @@ function CriterionRow({ criterion, score, index }) {
 export default function CandidatPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getCandidatById, getCandidatDetailById, loading, error, candidates } = useCandidates();
+  const { getCandidatById, getCandidatDetailById, loading, error } = useCandidates();
 
   const candidat = getCandidatById(id);
   const [detail, setDetail] = useState(null);
@@ -163,7 +164,6 @@ export default function CandidatPage() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-xl mx-auto px-4 py-6 mb-0"
     >
-
       {/* ─── Main Dashboard ───────────────────────────────────── */}
       <div className="bg-surface border border-muted pb-0 border-border/50 rounded-2xl shadow-card overflow-hidden">
 
@@ -288,9 +288,9 @@ export default function CandidatPage() {
                 <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {GRILLE.map((c, i) => (
-                  <div key={c.key} className={i === 0 ? "col-span-2 pb-2" : ""}>
+                  <div key={c.key} className="pb-1">
                     <CriterionRow
                       criterion={c}
                       score={detail ? detail[c.key] : (c.fixed ?? null)}
