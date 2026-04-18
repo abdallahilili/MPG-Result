@@ -3,10 +3,12 @@ import { motion, animate } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
   ArrowLeft, Phone, IdCard,
-  Clock, XCircle, Check,
+  Clock, XCircle, Check, AlertCircle,
   GraduationCap, Briefcase, Flame, Target, Clock3, FileText
 } from "lucide-react";
 import { useCandidates } from "../hooks/useCandidates";
+import ReclamationModal from "../components/ReclamationModal";
+import { supabase } from "../lib/supabase";
 
 const BRAND = "#d97757";
 
@@ -89,6 +91,13 @@ export default function CandidatPage() {
   const candidat = getCandidatById(id);
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasReclame, setHasReclame] = useState(false);
+
+  // Deadline logic: 48h starting from 18/04/2026 22:00
+  const START_DATE = new Date("2026-04-18T22:00:00");
+  const END_DATE = new Date(START_DATE.getTime() + 48 * 60 * 60 * 1000);
+  const isDeadlinePassed = new Date() > END_DATE;
 
   useEffect(() => {
     if (!id) return;
@@ -97,6 +106,16 @@ export default function CandidatPage() {
       setDetail(d);
       setDetailLoading(false);
     });
+
+    // Check if claimant already exists
+    supabase
+      .from('reclamations')
+      .select('id')
+      .eq('candidate_id', id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setHasReclame(true);
+      });
   }, [id, getCandidatDetailById]);
 
   if (loading) {
@@ -320,6 +339,29 @@ export default function CandidatPage() {
           </div>
         )}
       </div>
+
+      {/* Floating Action Button for Reclamation - Only if not already reclaimed & before deadline */}
+      {candidat && !hasReclame && !isDeadlinePassed && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsModalOpen(true)}
+          className="fixed bottom-8 right-8 w-14 h-14 bg-[#1c1917] text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:bg-primary transition-colors group"
+        >
+          <AlertCircle size={24} className="group-hover:rotate-12 transition-transform" />
+          <span className="absolute right-full mr-4 bg-[#1c1917] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+            Déposer une réclamation
+          </span>
+        </motion.button>
+      )}
+
+      <ReclamationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => setHasReclame(true)}
+        candidatName={candidat?.nom}
+        candidatId={candidat?.id}
+      />
     </motion.div>
   );
 }
