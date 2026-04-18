@@ -93,6 +93,7 @@ export default function CandidatPage() {
   const [detailLoading, setDetailLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasReclame, setHasReclame] = useState(false);
+  const [showFullLabel, setShowFullLabel] = useState(false);
 
   // Deadline logic: 48h starting from 18/04/2026 22:00
   const START_DATE = new Date("2026-04-18T22:00:00");
@@ -117,6 +118,21 @@ export default function CandidatPage() {
         if (data) setHasReclame(true);
       });
   }, [id, getCandidatDetailById]);
+
+  useEffect(() => {
+    if (!loading && candidat && !hasReclame && !isDeadlinePassed) {
+      // Attendre un peu puis montrer le label complet
+      const startTimer = setTimeout(() => {
+        setShowFullLabel(true);
+        // Shrink back after 2 seconds
+        const endTimer = setTimeout(() => {
+          setShowFullLabel(false);
+        }, 3000);
+        return () => clearTimeout(endTimer);
+      }, 1000);
+      return () => clearTimeout(startTimer);
+    }
+  }, [loading, candidat, hasReclame, isDeadlinePassed]);
 
   if (loading) {
     return (
@@ -343,15 +359,41 @@ export default function CandidatPage() {
       {/* Floating Action Button for Reclamation - Only if not already reclaimed & before deadline */}
       {candidat && !hasReclame && !isDeadlinePassed && (
         <motion.button
+          layout
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-8 right-8 w-14 h-14 bg-[#1c1917] text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:bg-primary transition-colors group"
+          className={`
+            fixed bottom-8 right-8 h-14 bg-[#1c1917] text-white rounded-full shadow-2xl 
+            flex items-center justify-center z-50 hover:bg-primary transition-all duration-500 group overflow-hidden
+            ${showFullLabel ? 'px-6 w-auto' : 'w-14 px-0'}
+          `}
         >
-          <AlertCircle size={24} className="group-hover:rotate-12 transition-transform" />
-          <span className="absolute right-full mr-4 bg-[#1c1917] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
-            Déposer une réclamation
-          </span>
+          <div className="flex items-center justify-center">
+            <AlertCircle size={24} className="group-hover:rotate-12 transition-transform shrink-0" />
+            
+            <motion.div
+              initial={false}
+              animate={{ 
+                width: showFullLabel ? "auto" : 0,
+                opacity: showFullLabel ? 1 : 0,
+                marginLeft: showFullLabel ? 12 : 0
+              }}
+              className="overflow-hidden whitespace-nowrap"
+            >
+              <span className="text-[10px] font-black uppercase tracking-widest block">
+                Déposer une réclamation
+              </span>
+            </motion.div>
+          </div>
+
+          {!showFullLabel && (
+            <span className="absolute right-full mr-4 bg-[#1c1917] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+              Déposer une réclamation
+            </span>
+          )}
         </motion.button>
       )}
 

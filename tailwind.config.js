@@ -25,6 +25,15 @@ export default {
       fontFamily: {
         sans: ["'Plus Jakarta Sans'", "system-ui", "sans-serif"],
       },
+      keyframes: {
+        'pulse-subtle': {
+          '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(198, 97, 63, 0)' },
+          '50%': { transform: 'scale(1.02)', boxShadow: '0 0 0 10px rgba(198, 97, 63, 0.1)' },
+        }
+      },
+      animation: {
+        'pulse-subtle': 'pulse-subtle 2s infinite ease-in-out',
+      }
     },
   },
   plugins: [],
