@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import HomePage from "./pages/HomePage";
@@ -5,6 +6,11 @@ import CandidatPage from "./pages/CandidatPage";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import OfflineOverlay from "./components/OfflineOverlay";
+import { ErrorBoundary } from "./lib/errorHandler"; // ← NOUVEAU
+import { initCacheCleanup } from "./lib/cache"; // ← NOUVEAU
+
+// Initialiser le nettoyage du cache au démarrage
+initCacheCleanup();
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -20,15 +26,17 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <div className="bg-bg min-h-screen flex flex-col font-sans text-[#1c1917] selection:bg-primary/10 selection:text-primary">
-      <BrowserRouter>
-        <OfflineOverlay />
-        <Header />
-        <main className="flex-1 overflow-x-hidden">
-          <AnimatedRoutes />
-        </main>
-        <Footer />
-      </BrowserRouter>
-    </div>
+    <ErrorBoundary> {/* ← NOUVEAU */}
+      <div className="bg-bg min-h-screen flex flex-col font-sans text-[#1c1917] selection:bg-primary/10 selection:text-primary">
+        <BrowserRouter>
+          <OfflineOverlay />
+          <Header />
+          <main className="flex-1 overflow-x-hidden">
+            <AnimatedRoutes />
+          </main>
+          <Footer />
+        </BrowserRouter>
+      </div>
+    </ErrorBoundary>
   );
 }

@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 
 /**
  * SearchBar – champ de recherche unique (nom / téléphone / NNI)
- * Gère son propre état local et ne déclenche la recherche que sur validation.
+ * Gère son propre état local synchronisé avec la valeur initiale fournie.
  */
-export default function SearchBar({ onSearch }) {
-  const [localValue, setLocalValue] = useState("");
+export default function SearchBar({ onSearch, defaultValue = "" }) {
+  const [localValue, setLocalValue] = useState(defaultValue);
+
+  // Synchroniser l'état local si defaultValue change (ex: retour arrière navigateur)
+  useEffect(() => {
+    setLocalValue(defaultValue);
+  }, [defaultValue]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    onSearch(localValue);
   };
 
   const handleChange = (e) => {
     const val = e.target.value;
     setLocalValue(val);
-    onSearch(val); // Instant search
+    onSearch(val); // Recherche instantanée
   };
 
   const handleClear = () => {

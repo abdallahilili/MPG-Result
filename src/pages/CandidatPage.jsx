@@ -151,7 +151,7 @@ export default function CandidatPage() {
       soft: "bg-red/5",
       border: "border-red/20",
       text: "text-red",
-      label: "Rejeté",
+      label: "Non sélectionné",
       icon: <XCircle size={32} />
     }
   };
@@ -164,6 +164,15 @@ export default function CandidatPage() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-xl mx-auto px-4 py-6 mb-0"
     >
+      {/* Bouton Retour */}
+      {/* <button
+        onClick={() => navigate(-1)}
+        className="mb-4 flex items-center gap-2 text-xs font-bold text-muted hover:text-primary transition-colors uppercase tracking-widest"
+      >
+        <ArrowLeft size={16} />
+        Retour aux résultats
+      </button> */}
+
       {/* ─── Main Dashboard ───────────────────────────────────── */}
       <div className="bg-surface border border-muted pb-0 border-border/50 rounded-2xl shadow-card overflow-hidden">
 
@@ -182,8 +191,16 @@ export default function CandidatPage() {
 
           {/* Info Tiles Grid */}
           <div className="p-0 pt-2 bg-bg/20 w-full grid grid-cols-2 gap-3 border-t border-border/40">
-            <DetailTile icon={<Phone size={15} />} label="Téléphone" value={candidat.telephone ? "***" + candidat.telephone.slice(3) : "–"} />
-            <DetailTile icon={<IdCard size={15} />} label="Numéro NNI" value={candidat.nni ? "****" + candidat.nni.slice(3) : "–"} />
+            <DetailTile 
+              icon={<Phone size={15} />} 
+              label="Téléphone" 
+              value={candidat.telephone ? `***${candidat.telephone.replace(/\D/g, '').slice(-5)}` : "–"} 
+            />
+            <DetailTile 
+              icon={<IdCard size={15} />} 
+              label="Numéro NNI" 
+              value={candidat.nni ? `****${candidat.nni.replace(/\D/g, '').slice(-6)}` : "–"} 
+            />
           </div>
         </div>
 

@@ -1,21 +1,26 @@
-import { useMemo } from "react";
-import { motion } from "framer-motion";
-import { SearchX } from "lucide-react";
+// src/pages/HomePage.jsx
+import { useMemo, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { SearchX, ChevronUp } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import FiliereSelect from "../components/FiliereSelect";
 import CandidatCard from "../components/CandidatCard";
+import ErrorDisplay from "../components/ErrorDisplay";
 import { useCandidates } from "../hooks/useCandidates";
 
-/**
- * HomePage
- * - Champ de recherche (nom / téléphone / NNI) - validé au clic
- * - Dropdown pour filtrer par filière
- * - Liste des sélectionnés (triés par rang)
- * - Liste d'attente (triés par rang)
- */
 export default function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Détecter le scroll pour afficher le bouton
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   
   const searchTerm = searchParams.get("s") || "";
   const filiere = searchParams.get("f") || "Toutes les filières";
@@ -34,62 +39,58 @@ export default function HomePage() {
     setSearchParams(next, { replace: true });
   };
 
-  const { filieres, filterCandidates, loading, error, candidates } = useCandidates();
+  const { 
+    filieres, 
+    filterCandidates, 
+    loading, 
+    error,
+    retry
+  } = useCandidates();
 
-  // Candidats filtrés selon recherche (validée) + filière
   const filtered = useMemo(
     () => filterCandidates(filiere, searchTerm),
     [filiere, searchTerm, filterCandidates]
   );
 
   const isFiliereSelected = filiere !== "Toutes les filières";
-
-  // Séparation sélectionnés / liste d'attente
-
   const isSearching = searchTerm.trim().length > 0;
 
-  // STATS : Calcul des rejetés
-  const rejetes = useMemo(() => {
-    return filtered.filter((c) => c.statut === "rejete");
-  }, [filtered]);
-
-  const selectionnes = useMemo(() => {
-    let base = filtered.filter((c) => c.statut === "selectionne");
-
-    return base.sort((a, b) => {
+  // Grouper et trier les candidats (Tout se fait localement maintenant)
+  const { selectionnes, attente, rejetes } = useMemo(() => {
+    const groups = { selectionnes: [], attente: [], rejetes: [] };
+    
+    filtered.forEach(c => {
+      if (c.statut === "selectionne") groups.selectionnes.push(c);
+      else if (c.statut === "attente") groups.attente.push(c);
+      else groups.rejetes.push(c);
+    });
+    
+    const sortFn = (a, b) => {
       const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
       const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
       return (rankA ?? Infinity) - (rankB ?? Infinity);
-    });
-  }, [filtered, isFiliereSelected]);
-
-  const attente = useMemo(() => {
-    return filtered
-      .filter((c) => c.statut === "attente")
-      .sort((a, b) => {
-        const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
-        const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
-        return (rankA ?? Infinity) - (rankB ?? Infinity);
-      });
+    };
+    
+    return {
+      selectionnes: groups.selectionnes.sort(sortFn),
+      attente: groups.attente.sort(sortFn),
+      rejetes: groups.rejetes
+    };
   }, [filtered, isFiliereSelected]);
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">Chargement des résultats...</p>
+        <p className="mt-4 text-xs font-bold text-muted uppercase tracking-widest">
+          Chargement des résultats...
+        </p>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-        <span className="text-4xl mb-4">❌</span>
-        <p className="text-muted font-medium mb-4">Erreur lors du chargement des données.</p>
-        <p className="text-[10px] text-red/70 font-mono bg-red-soft px-3 py-1 rounded-md">{error}</p>
-      </div>
-    );
+  if (error && error.type !== "warning") {
+    return <ErrorDisplay error={error} onRetry={retry} />;
   }
 
   return (
@@ -100,14 +101,20 @@ export default function HomePage() {
       transition={{ duration: 0.22, ease: "easeOut" }}
       className="max-w-2xl mx-auto px-5 py-10"
     >
-      {/* ─── Guide utilisateur / Banner ──────────────────────────── */}
+      {/* Bannière d'avertissement si mode offline */}
+      {error?.type === "network" && (
+        <div className="mb-6 bg-orange-soft border border-orange/20 rounded-xl p-4 flex items-center gap-3">
+          <span className="text-orange text-sm">⚠️</span>
+          <p className="text-sm text-muted">{error.message}</p>
+        </div>
+      )}
+
       <div className="text-left text-lg font-bold text-muted mb-4">
         Résultats sélection MPG 2026
       </div>
 
-      {/* ─── Barre de recherche + filtre ─────────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-        <SearchBar onSearch={setSearchTerm} />
+        <SearchBar onSearch={setSearchTerm} defaultValue={searchTerm} />
         <FiliereSelect
           filieres={filieres}
           value={filiere}
@@ -115,48 +122,46 @@ export default function HomePage() {
         />
       </section>
 
-      {/* ─── Statistiques de filière ─────────────────────────────── */}
       {isFiliereSelected && !isSearching && (
-        <div className="flex flex-wrap items-center gap-2 mb-8 p-3 bg-surface rounded-lg border border-border text-[10px] font-bold uppercase tracking-widest shadow-soft">
-          <span className="text-green flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green" /> {selectionnes.length} sélectionnés</span>
+        <div className="flex flex-wrap items-center gap-2 mb-8 p-3 bg-surface rounded-lg border border-border text-[8px] font-bold uppercase tracking-widest shadow-soft">
+          <span className="text-green flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-green" /> 
+            {selectionnes.length} sélectionné
+          </span>
           <span className="text-muted/30">|</span>
-          <span className="text-orange flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-orange" /> {attente.length} en attente</span>
+          <span className="text-orange flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange" /> 
+            {attente.length} en attente
+          </span>
           <span className="text-muted/30">|</span>
-          <span className="text-red flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red" /> {rejetes.length} rejetés</span>
+          <span className="text-red flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-red" /> 
+            {rejetes.length} Non sélectionné
+          </span>
         </div>
       )}
 
-      {/* ─── Contenu Principal ───────────────────────────────────── */}
       <div className="space-y-8">
         {isSearching ? (
-          /* Résultats de recherche active */
           <section>
             <SectionHeader title="Résultats de recherche" count={filtered.length} />
             {filtered.length === 0 ? (
               <EmptyState message={`Aucun résultat pour "${searchTerm}"`} />
             ) : (
               <div className="flex flex-col gap-1 mt-3">
-                {filtered
-                  .sort((a, b) => {
-                    const rankA = isFiliereSelected ? (a.rang_in_specialty ?? a.rang) : a.rang;
-                    const rankB = isFiliereSelected ? (b.rang_in_specialty ?? b.rang) : b.rang;
-                    return (rankA ?? Infinity) - (rankB ?? Infinity);
-                  })
-                  .map((c, index) => (
-                    <CandidatCard
-                      key={c.id}
-                      candidat={c}
-                      index={index}
-                      useSpecialtyRank={isFiliereSelected}
-                    />
-                  ))}
+                {filtered.map((c, index) => (
+                  <CandidatCard
+                    key={c.id}
+                    candidat={c}
+                    index={index}
+                    showRang={false}
+                  />
+                ))}
               </div>
             )}
           </section>
         ) : (
-          /* Listes normales (Toutes les filières ou Filière spécifique) */
           <div className="space-y-6">
-            {/* Sélectionnés */}
             <section>
               <SectionHeader
                 title="Candidats sélectionnés"
@@ -172,14 +177,12 @@ export default function HomePage() {
                       key={c.id}
                       candidat={c}
                       index={index}
-                      useSpecialtyRank={isFiliereSelected}
                     />
                   ))}
                 </div>
               )}
             </section>
 
-            {/* Liste d'attente */}
             {attente.length > 0 && (
               <>
                 <hr className="border-border border-dashed my-6" />
@@ -195,7 +198,6 @@ export default function HomePage() {
                         key={c.id}
                         candidat={c}
                         index={index}
-                        useSpecialtyRank={isFiliereSelected}
                       />
                     ))}
                   </div>
@@ -205,11 +207,26 @@ export default function HomePage() {
           </div>
         )}
       </div>
+      {/* Bouton Retour en haut */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center z-50 hover:bg-primary-dark transition-colors border-2 border-white/20 backdrop-blur-sm"
+            aria-label="Retour en haut"
+          >
+            <ChevronUp size={24} strokeWidth={2.5} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
-
-/* ── Composants locaux ─────────────────────────────────────────── */
 
 function SectionHeader({ title, count, dotColor }) {
   return (
