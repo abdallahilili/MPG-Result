@@ -34,10 +34,10 @@ export default function SearchBar({ onSearch, defaultValue = "" }) {
       <input
         type="text"
         className="w-full h-12 pl-4 pr-32 bg-surface border border-border rounded-lg text-xs font-medium focus:outline-none focus:border-primary transition-all placeholder:text-muted/60 shadow-soft"
-        placeholder="Nom, téléphone ou NNI…"
+        placeholder="Nom, téléphone, NNI ou Email…"
         value={localValue}
         onChange={handleChange}
-        aria-label="Nom, téléphone ou NNI…"
+        aria-label="Nom, téléphone, NNI ou Email…"
       />
       <div className="absolute right-1.5 flex items-center gap-1">
         {localValue && (

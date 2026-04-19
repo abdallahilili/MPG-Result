@@ -127,7 +127,8 @@ export function useCandidates() {
         (c.nom && c.nom.toLowerCase().includes(term)) ||
         (cleanPhone && cleanTerm && cleanPhone.includes(cleanTerm)) ||
         (c.telephone && c.telephone.toLowerCase().includes(term)) ||
-        (c.nni && c.nni.includes(term));
+        (c.nni && c.nni.includes(term)) ||
+        (c.email_addr && c.email_addr.toLowerCase().includes(term));
 
       return matchFiliere && matchSearch;
     });

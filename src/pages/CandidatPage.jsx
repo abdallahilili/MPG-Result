@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, animate } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
-  ArrowLeft, Phone, IdCard,
+  ArrowLeft, Phone, IdCard, Mail,
   Clock, XCircle, Check, AlertCircle,
   GraduationCap, Briefcase, Flame, Target, Clock3, FileText
 } from "lucide-react";
@@ -225,17 +225,28 @@ export default function CandidatPage() {
           </div>
 
           {/* Info Tiles Grid */}
-          <div className="p-0 pt-2 bg-bg/20 w-full grid grid-cols-2 gap-3 border-t border-border/40">
-            <DetailTile 
-              icon={<Phone size={15} />} 
-              label="Téléphone" 
-              value={candidat.telephone ? `***${candidat.telephone.replace(/\D/g, '').slice(-5)}` : "–"} 
-            />
-            <DetailTile 
-              icon={<IdCard size={15} />} 
-              label="Numéro NNI" 
-              value={candidat.nni ? `****${candidat.nni.replace(/\D/g, '').slice(-6)}` : "–"} 
-            />
+          <div className="p-0 pt-2 bg-bg/20 w-full border-t border-border/40">
+            {!candidat.telephone && !candidat.nni ? (
+              <DetailTile 
+                icon={<Mail size={15} />} 
+                label="Candidature déposée via" 
+                value={candidat.email_addr || "L'adresse email de dépôt"} 
+                color="text-primary"
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <DetailTile 
+                  icon={<Phone size={15} />} 
+                  label="Téléphone" 
+                  value={candidat.telephone ? `***${candidat.telephone.replace(/\D/g, '').slice(-5)}` : "–"} 
+                />
+                <DetailTile 
+                  icon={<IdCard size={15} />} 
+                  label="Numéro NNI" 
+                  value={candidat.nni ? `****${candidat.nni.replace(/\D/g, '').slice(-6)}` : "–"} 
+                />
+              </div>
+            )}
           </div>
         </div>
 
