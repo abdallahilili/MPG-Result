@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useCandidates } from "../hooks/useCandidates";
 import ReclamationModal from "../components/ReclamationModal";
+import ReclamationListModal from "../components/ReclamationListModal";
 import { supabase } from "../lib/supabase";
 
 const BRAND = "#d97757";
@@ -92,8 +93,10 @@ export default function CandidatPage() {
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [hasReclame, setHasReclame] = useState(false);
   const [showFullLabel, setShowFullLabel] = useState(false);
+  const [showListLabel, setShowListLabel] = useState(false);
 
   // Deadline logic: 48h starting from 18/04/2026 22:00
   const START_DATE = new Date("2026-04-18T22:00:00");
@@ -133,6 +136,19 @@ export default function CandidatPage() {
       return () => clearTimeout(startTimer);
     }
   }, [loading, candidat, hasReclame, isDeadlinePassed]);
+
+  useEffect(() => {
+    if (!loading && candidat) {
+      const startTimer = setTimeout(() => {
+        setShowListLabel(true);
+        const endTimer = setTimeout(() => {
+          setShowListLabel(false);
+        }, 3000);
+        return () => clearTimeout(endTimer);
+      }, 1500);
+      return () => clearTimeout(startTimer);
+    }
+  }, [loading, candidat]);
 
   if (loading) {
     return (
@@ -408,11 +424,74 @@ export default function CandidatPage() {
         </motion.button>
       )}
 
+      {/* Floating Action Button — Voir vos réclamations (visible pour tous les candidats) */}
+      {candidat && (
+        <motion.button
+          layout
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsListModalOpen(true)}
+          className={`
+            fixed bottom-8 right-8 h-14 bg-[#1c1917] text-white rounded-full shadow-2xl 
+            flex items-center justify-center z-50 hover:bg-primary transition-all duration-500 group overflow-hidden
+            ${showListLabel ? 'px-6 w-auto' : 'w-14 px-0'}
+          `}
+        >
+          <div className="flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="group-hover:rotate-12 transition-transform shrink-0"
+            >
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+
+            <motion.div
+              initial={false}
+              animate={{
+                width: showListLabel ? "auto" : 0,
+                opacity: showListLabel ? 1 : 0,
+                marginLeft: showListLabel ? 12 : 0
+              }}
+              className="overflow-hidden whitespace-nowrap"
+            >
+              <span className="text-[10px] font-black uppercase tracking-widest block">
+                Voir vos réclamations
+              </span>
+            </motion.div>
+          </div>
+
+          {!showListLabel && (
+            <span className="absolute right-full mr-4 bg-[#1c1917] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+              Voir vos réclamations
+            </span>
+          )}
+        </motion.button>
+      )}
+
       <ReclamationModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSuccess={() => setHasReclame(true)}
         candidatName={candidat?.nom}
+        candidatId={candidat?.id}
+      />
+
+      <ReclamationListModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
         candidatId={candidat?.id}
       />
     </motion.div>
